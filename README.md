@@ -8,7 +8,7 @@ API  (Swagger and Redoc) ساده و آماده برای توسعه
 
 ## clone the project
 git clone 
-https://github.com/Elid1993/django_Realestate.git
+https://github.com/Elid1993/Django-online-shop
 
 ## create a virtual environment
 python -m venv venv  
