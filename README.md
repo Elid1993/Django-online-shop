@@ -32,7 +32,7 @@ python manage.py runserver
 Swagger UI: http://localhost:8000/api/swagger-ui/
 Redoc:http://localhost:8000/api/redoc/
 schema(openAPI):http://localhost:8000/api/schema/
-
+فروشگاه:https://localhost:8000/api/products/
 ## Models & Fields
 Product 
 name: اسم محصول
