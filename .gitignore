@@ -84,6 +84,7 @@ target/
 *.pyc
 __pycache__/
 local_settings.py
-
+.qodo
 .env
 db.sqlite3
+eli2
