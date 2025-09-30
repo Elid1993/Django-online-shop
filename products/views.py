@@ -80,3 +80,9 @@ def product_list(request):
 def product_detail(request,pk):
     product = get_object_or_404(Product.objects.prefetch_related("images"),pk=pk)
     return render(request,"product_detail.html",{"product":product})
+
+def cart_view(request):
+    return render (request,"cart.html")
+
+def orders_view(request):
+    return render (request,"orders.html")

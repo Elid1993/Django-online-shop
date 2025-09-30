@@ -1,20 +1,20 @@
 from rest_framework import viewsets,status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from .models import Cart,CartItem,Order,OrderItem
 from drf_spectacular.utils import extend_schema
 from .serializers import CartSerializer,CartItemSerializer,OrderSerializer
 
 class CartViewSet(viewsets.ViewSet):
     # queryset = Cart.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     @extend_schema(
         tags=["Orders"]
     )
     def list(self, request):
-        cart,_=Cart.objects.get_or_create(user=request.user)
+        cart,_=Cart.objects.get_or_create(user=None)
         serializer=CartSerializer(cart)
         return Response(serializer.data)
 
@@ -48,12 +48,12 @@ class CartViewSet(viewsets.ViewSet):
         return Response(CartSerializer(cart).data)
     
 class OrderViewSet(viewsets.ViewSet):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[AllowAny]
     @extend_schema(
         tags=["Orders"]
     )
     def list(self, request):
-        orders=Order.objects.filter(user=request.user)
+        orders=Order.objects.filter(user=None)
         serializer=OrderSerializer(orders,many=True)
         return Response(serializer.data)
     @action(detail=False,methods=['post'])

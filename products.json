@@ -1,0 +1,53 @@
+[
+{
+  "model": "products.category",
+  "pk": 1,
+  "fields": {
+    "name": "شال",
+    "slug": "scarf",
+    "description": "انواع شال ",
+    "created_at": "2025-09-18T03:38:07.941Z"
+  }
+},
+{
+  "model": "products.category",
+  "pk": 2,
+  "fields": {
+    "name": "dress",
+    "slug": "dress",
+    "description": "لباس مجلسی ",
+    "created_at": "2025-09-20T01:08:21.624Z"
+  }
+},
+{
+  "model": "products.product",
+  "pk": 1,
+  "fields": {
+    "category": null,
+    "name": "red scarf",
+    "slug": "red-scarf",
+    "description": "مینی اسکارف قرمز",
+    "price":60000,
+    "stock":10,
+    "is_active":true,
+    "categori":1,
+    "created_at":"2025-09-18T03:38:07.941Z",
+    "updated_at":"2025-09-18T03:38:07.941Z"
+  }
+},
+{
+  "model":"products.product",
+  "pk":2,
+  "fields":{
+    "name":"dress",
+    "slug":"dress",
+    "description":"لباس مجلسی ",
+    "price":250000,
+    "stock":5,
+    "is_active":true,
+    "category":2,
+    "created_at":"2025-09-18T03:38:07.941Z",
+    "updated_at":"2025-09-18T03:38:07.941Z"
+  }
+}
+]

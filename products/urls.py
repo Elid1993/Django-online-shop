@@ -1,6 +1,6 @@
 from django.urls import path,include
 from rest_framework.routers import DefaultRouter
-from .views import CategoryViewSet,ProductViewSet,ProductImageViewSet,product_list,product_detail
+from .views import CategoryViewSet,ProductViewSet,ProductImageViewSet,product_list,product_detail,cart_view,orders_view
 
 
 router= DefaultRouter()
@@ -13,4 +13,6 @@ urlpatterns =[
     path('api/',include (router.urls,)),
     path("products/",product_list,name ="product_list"),
     path("products/<int:pk>/",product_detail,name="product_detail"),
+    path("cart/",cart_view,name="cart"),
+    path("orders/",orders_view,name="orders_view"),
     ]
