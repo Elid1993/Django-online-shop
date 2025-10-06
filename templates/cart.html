@@ -9,27 +9,36 @@
 <body class="bg-light">
 <div class="container py-5">
     <h1 class="mb-4 text-center">🛒 سبد خرید</h1>
+
     <div class="row mb-3">
         <div class="col-md-12 d-flex justify-content-between">
             <button class="btn btn-danger" onclick="clearCart()">🗑️ خالی کردن سبد خرید</button>
             <button class="btn btn-success" onclick="checkout()">💳 تسویه حساب</button>
+            <a href="{% url 'orders_view' %}" class="btn btn-info">📦 سفارش‌های من</a>
         </div>
     </div>
+
     <div id="cart-items" class="row g-3">
         <!-- آیتم‌های سبد خرید اینجا با جاوااسکریپت پر میشن -->
     </div>
 </div>
 
 <script>
-const API_BASE = "https://{{ request.get_host }}/api/orders/cart/";
-const API_ORDER = "https://{{ request.get_host }}/api/orders/checkout/";
+const API_CART = "http://localhost:8000/api/cart/";
+const API_ORDER = "http://localhost:8000/api/orders/checkout/";
 
-// 🟢 افزودن محصول به سبد
+// 🟢 افزودن محصول
 function addToCart(productId) {
-    fetch(API_BASE + "add_item/", {
+    fetch(API_CART + "add_item/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ product_id: productId, quantity: 1 })
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
+        body: JSON.stringify({
+            product_id: productId,
+            quantity: 1
+        })
     })
     .then(res => res.json())
     .then(data => {
@@ -39,11 +48,14 @@ function addToCart(productId) {
     .catch(err => alert("❌ خطا در افزودن محصول!"));
 }
 
-// 🔴 حذف یک محصول خاص
+// 🔴 حذف یک محصول
 function removeFromCart(productId) {
-    fetch(API_BASE + "remove_item/", {
+    fetch(API_CART + "remove_item/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        },
         body: JSON.stringify({ product_id: productId })
     })
     .then(res => res.json())
@@ -54,9 +66,15 @@ function removeFromCart(productId) {
     .catch(err => alert("❌ خطا در حذف محصول!"));
 }
 
-// 🟡 خالی کردن کل سبد
+// 🟡 خالی کردن سبد
 function clearCart() {
-    fetch(API_BASE + "clear_cart/", { method: "POST", headers: { "Content-Type": "application/json" } })
+    fetch(API_CART + "clear_cart/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        }
+    })
     .then(res => res.json())
     .then(data => {
         alert("🛒 سبد خرید خالی شد!");
@@ -65,10 +83,19 @@ function clearCart() {
     .catch(err => alert("❌ خطا در خالی کردن سبد!"));
 }
 
-// 💳 تسویه حساب (ثبت سفارش)
+// 💳 تسویه حساب
 function checkout() {
-    fetch(API_ORDER, { method: "POST", headers: { "Content-Type": "application/json" } })
-    .then(res => res.json())
+    fetch(API_ORDER, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("خطا در تسویه حساب");
+        return res.json();
+    })
     .then(data => {
         alert("✅ سفارش شما ثبت شد! شماره سفارش: " + data.id);
         loadCart();
@@ -76,9 +103,14 @@ function checkout() {
     .catch(err => alert("❌ خطا در ثبت سفارش!"));
 }
 
-// 📦 نمایش آیتم‌های سبد خرید
+// 📦 بارگذاری سبد خرید
 function loadCart() {
-    fetch(API_BASE, { headers: { "Content-Type": "application/json" } })
+    fetch(API_CART, {
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": "{{ csrf_token }}"
+        }
+    })
     .then(res => res.json())
     .then(data => {
         const container = document.getElementById("cart-items");
@@ -91,7 +123,7 @@ function loadCart() {
                             <h5>${item.product.name}</h5>
                             <p>تعداد: ${item.quantity}</p>
                             <p>قیمت: ${item.product.price} تومان</p>
-                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${item.product.id})">حذف</button>
+                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${item.product.id})">❌ حذف</button>
                         </div>
                     </div>
                 `;
@@ -102,8 +134,28 @@ function loadCart() {
     });
 }
 
-// وقتی صفحه لود شد → سبد خرید نمایش داده بشه
+// وقتی صفحه لود شد → سبد خرید رو بارگذاری کن
 document.addEventListener("DOMContentLoaded", loadCart);
+</script>
+{% csrf_token% }
+<script>
+function getCookie(name) {
+    let cookieValue=null;
+    if(document.cookie && document.cookie !== '') {
+        const cookie = document.cookie.split(';');
+        for(let i=0; i<cookies.length; i++) {
+            const cookie =cookies[i].trim();
+            if (cookie.substring(name.length +1)===(name +'=')){
+                cookieValue= decodeURIComponent(cookie.substring(name.length +1));
+                break;
+
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken=getCookie("csrftoken");
 </script>
 </body>
 </html>
+

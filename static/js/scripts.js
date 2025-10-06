@@ -1,107 +1,135 @@
-/*!
-* Start Bootstrap - Shop Homepage v5.0.6 (https://startbootstrap.com/template/shop-homepage)
-* Copyright 2013-2023 Start Bootstrap
-* Licensed under MIT (https://github.com/StartBootstrap/startbootstrap-shop-homepage/blob/master/LICENSE)
-*/
-// This file is intentionally blank
-// Use this file to add JavaScript to your project
-// alert("hello java");
+// ------------------ CSRF Helper ------------------
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
 
-// آدرس‌های API
-const API_CART = "http://localhost:8000/api/orders/cart/";
-const API_ORDER = "http://localhost:8000/api/orders/checkout/";
+// ------------------ Detect Base URL ------------------
+let BASE_URL = window.location.origin;  
+// یعنی اگر روی لوکال باشی میشه http://127.0.0.1:8000
+// و اگر روی pythonanywhere باشی میشه https://a1368e.pythonanywhere.com
 
-// 🟢 افزودن محصول به سبد
+const API_CART = BASE_URL + "/api/cart/";
+const API_ORDER = BASE_URL + "/api/orders/";
+
+// ------------------ Add Item ------------------
 function addToCart(productId) {
+    console.log(" ارسال درخوایت به", API_CART + "add_item/");
     fetch(API_CART + "add_item/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()
+            "X-CSRFToken": csrftoken,
         },
         body: JSON.stringify({
             product_id: productId,
             quantity: 1
-        })
+        }),
     })
     .then(res => {
-        if (!res.ok) throw new Error("خطا در افزودن محصول");
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
         return res.json();
     })
     .then(data => {
-        alert("✅ محصول اضافه شد!");
+        alert("✅ محصول اضافه شد به سبد!");
         loadCart();
     })
-    .catch(err => alert("❌ خطا در افزودن محصول!"));
+    .catch(err => {
+        console.error("❌ خطا در افزودن:", err);
+        alert("❌ خطا در افزودن: " + (err.detail || "مشکل ناشناخته"));
+    });
 }
 
-// 🔴 حذف یک محصول خاص
+// ------------------ Remove Item ------------------
 function removeFromCart(productId) {
     fetch(API_CART + "remove_item/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()
+            "X-CSRFToken": csrftoken,
         },
-        body: JSON.stringify({ product_id: productId })
+        body: JSON.stringify({ product_id: productId }),
     })
     .then(res => res.json())
     .then(data => {
         alert("🗑️ محصول حذف شد!");
         loadCart();
     })
-    .catch(err => alert("❌ خطا در حذف محصول!"));
+    .catch(err => {
+        console.error("❌ خطا در حذف:", err);
+        alert("❌ خطا در حذف محصول!");
+    });
 }
 
-// 🟡 خالی کردن کل سبد
+// ------------------ Clear Cart ------------------
 function clearCart() {
     fetch(API_CART + "clear_cart/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()
-        }
+            "X-CSRFToken": csrftoken,
+        },
     })
     .then(res => res.json())
     .then(data => {
         alert("🛒 سبد خرید خالی شد!");
         loadCart();
     })
-    .catch(err => alert("❌ خطا در خالی کردن سبد!"));
+    .catch(err => {
+        console.error("❌ خطا در خالی کردن:", err);
+        alert("❌ خطا در خالی کردن سبد!");
+    });
 }
 
-// 💳 تسویه حساب (ثبت سفارش)
+// ------------------ Checkout ------------------
 function checkout() {
     fetch(API_ORDER, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()
-        }
+            "X-CSRFToken": csrftoken,
+        },
     })
     .then(res => {
-        if (!res.ok) throw new Error("خطا در تسویه حساب");
+        if (!res.ok) {
+            return res.json().then(err => { throw err; });
+        }
         return res.json();
     })
     .then(data => {
-        alert("✅ سفارش شما با موفقیت ثبت شد! شماره سفارش: " + data.id);
+        alert("✅ سفارش شما ثبت شد! شماره سفارش: " + data.id);
         loadCart();
     })
-    .catch(err => alert("❌ خطا در ثبت سفارش!"));
+    .catch(err => {
+        console.error("❌ خطا در تسویه حساب:", err);
+        alert("❌ خطا در ثبت سفارش: " + (err.detail || "مشکل ناشناخته"));
+    });
 }
 
-// 📦 نمایش آیتم‌های سبد خرید
+// ------------------ Load Cart ------------------
 function loadCart() {
     fetch(API_CART, {
         headers: {
             "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()
-        }
+            "X-CSRFToken": csrftoken,
+        },
     })
     .then(res => res.json())
     .then(data => {
         const container = document.getElementById("cart-items");
-        if (!container) return; // اگر توی اون صفحه نبودیم
         container.innerHTML = "";
         if (data.items && data.items.length > 0) {
             data.items.forEach(item => {
@@ -122,19 +150,5 @@ function loadCart() {
     });
 }
 
-// 🛡 گرفتن CSRF Token از کوکی
-function getCSRFToken() {
-    let cookieValue = null;
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.startsWith("csrftoken=")) {
-            cookieValue = cookie.substring("csrftoken=".length, cookie.length);
-            break;
-        }
-    }
-    return cookieValue;
-}
-
-// وقتی صفحه لود شد
+// ------------------ Init ------------------
 document.addEventListener("DOMContentLoaded", loadCart);

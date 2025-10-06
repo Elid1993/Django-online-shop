@@ -9,74 +9,62 @@
 <body class="bg-light">
 
 <div class="container py-5">
-    <h1 class="mb-4 text-center">📦 سفارش‌های من</h1>
+    <h1 class="mb-4">📦 سفارش‌های من</h1>
 
     <div id="orders-list" class="row g-3">
-        <!-- سفارش‌ها اینجا با جاوااسکریپت پر میشن -->
+        <!-- سفارش‌ها اینجا با JS لود می‌شوند -->
     </div>
 
-    <div class="mt-4 text-center">
-        <a href="{% url 'product_list' %}" class="btn btn-secondary">← بازگشت به فروشگاه</a>
-    </div>
+    <a href="/" class="btn btn-secondary mt-4">🏠 بازگشت به فروشگاه</a>
 </div>
 
 <script>
 const API_ORDERS = "http://localhost:8000/api/orders/";
 
-// 📋 گرفتن سفارش‌ها
+// 🟢 گرفتن سفارش‌ها از API
 function loadOrders() {
-    fetch(API_ORDERS, {
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        const container = document.getElementById("orders-list");
-        container.innerHTML = "";
-        if (data.length > 0) {
+    fetch(API_ORDERS)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById("orders-list");
+            container.innerHTML = "";
+
+            if (data.length === 0) {
+                container.innerHTML = `<p class="text-muted">شما هنوز سفارشی ثبت نکرده‌اید.</p>`;
+                return;
+            }
+
             data.forEach(order => {
                 let itemsHtml = "";
                 order.items.forEach(item => {
                     itemsHtml += `
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            ${item.product.name} 
-                            <span>تعداد: ${item.quantity}</span>
-                            <span>قیمت: ${item.price} تومان</span>
-                        </li>
+                        <li>${item.product} × ${item.quantity} — ${item.price} تومان</li>
                     `;
                 });
 
                 container.innerHTML += `
-                    <div class="col-md-6">
-                        <div class="card shadow-sm">
-                            <div class="card-body">
-                                <h5 class="card-title">سفارش #${order.id}</h5>
-                                <p class="text-muted">تاریخ: ${order.created_at}</p>
-                                <p><strong>مبلغ کل: ${order.total_amount} تومان</strong></p>
-                                <h6>محصولات:</h6>
-                                <ul class="list-group mb-2">
-                                    ${itemsHtml}
-                                </ul>
-                            </div>
+                    <div class="col-12">
+                        <div class="card shadow-sm p-3">
+                            <h5>🆔 سفارش شماره ${order.id}</h5>
+                            <p>📅 تاریخ: ${order.created_at}</p>
+                            <p>📌 وضعیت: <span class="badge bg-info">${order.status}</span></p>
+                            <ul>${itemsHtml}</ul>
+                            <strong>💰 مبلغ کل: ${order.total_amount} تومان</strong>
                         </div>
                     </div>
                 `;
             });
-        } else {
-            container.innerHTML = "<p class='text-center'>هنوز سفارشی ثبت نکرده‌اید 🛍️</p>";
-        }
-    })
-    .catch(err => {
-        console.error("خطا در گرفتن سفارش‌ها", err);
-        alert("❌ خطا در گرفتن سفارش‌ها!");
-    });
+        })
+        .catch(err => {
+            console.error(err);
+            alert("❌ خطا در بارگذاری سفارش‌ها!");
+        });
 }
 
-// وقتی صفحه لود شد → سفارش‌ها نمایش داده بشه
+// وقتی صفحه لود شد → سفارش‌ها رو بگیر
 document.addEventListener("DOMContentLoaded", loadOrders);
 </script>
 
 </body>
 </html>
+
