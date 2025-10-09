@@ -4,158 +4,142 @@
 <head>
     <meta charset="UTF-8">
     <title>سبد خرید</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 </head>
-<body class="bg-light">
-<div class="container py-5">
-    <h1 class="mb-4 text-center">🛒 سبد خرید</h1>
+<body dir="rtl" class="p-4 bg-light">
 
-    <div class="row mb-3">
-        <div class="col-md-12 d-flex justify-content-between">
-            <button class="btn btn-danger" onclick="clearCart()">🗑️ خالی کردن سبد خرید</button>
-            <button class="btn btn-success" onclick="checkout()">💳 تسویه حساب</button>
-            <a href="{% url 'orders_view' %}" class="btn btn-info">📦 سفارش‌های من</a>
+    <div class="container">
+        <h2 class="text-center mb-4">🛍️ سبد خرید شما</h2>
+        <div id="cart-items" class="row"></div>
+
+        <div class="text-center mt-4">
+            <button class="btn btn-danger" onclick="clearCart()">🗑️ خالی کردن سبد</button>
+            <button class="btn btn-success" onclick="checkout()">✅ ثبت سفارش</button>
         </div>
     </div>
 
-    <div id="cart-items" class="row g-3">
-        <!-- آیتم‌های سبد خرید اینجا با جاوااسکریپت پر میشن -->
-    </div>
-</div>
-
-<script>
-const API_CART = "http://localhost:8000/api/cart/";
-const API_ORDER = "http://localhost:8000/api/orders/checkout/";
-
-// 🟢 افزودن محصول
-function addToCart(productId) {
-    fetch(API_CART + "add_item/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({
-            product_id: productId,
-            quantity: 1
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert("✅ محصول اضافه شد!");
-        loadCart();
-    })
-    .catch(err => alert("❌ خطا در افزودن محصول!"));
-}
-
-// 🔴 حذف یک محصول
-function removeFromCart(productId) {
-    fetch(API_CART + "remove_item/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        },
-        body: JSON.stringify({ product_id: productId })
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert("🗑️ محصول حذف شد!");
-        loadCart();
-    })
-    .catch(err => alert("❌ خطا در حذف محصول!"));
-}
-
-// 🟡 خالی کردن سبد
-function clearCart() {
-    fetch(API_CART + "clear_cart/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        alert("🛒 سبد خرید خالی شد!");
-        loadCart();
-    })
-    .catch(err => alert("❌ خطا در خالی کردن سبد!"));
-}
-
-// 💳 تسویه حساب
-function checkout() {
-    fetch(API_ORDER, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        }
-    })
-    .then(res => {
-        if (!res.ok) throw new Error("خطا در تسویه حساب");
-        return res.json();
-    })
-    .then(data => {
-        alert("✅ سفارش شما ثبت شد! شماره سفارش: " + data.id);
-        loadCart();
-    })
-    .catch(err => alert("❌ خطا در ثبت سفارش!"));
-}
-
-// 📦 بارگذاری سبد خرید
-function loadCart() {
-    fetch(API_CART, {
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": "{{ csrf_token }}"
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
-        const container = document.getElementById("cart-items");
-        container.innerHTML = "";
-        if (data.items && data.items.length > 0) {
-            data.items.forEach(item => {
-                container.innerHTML += `
-                    <div class="col-md-4">
-                        <div class="card p-3 shadow-sm">
-                            <h5>${item.product.name}</h5>
-                            <p>تعداد: ${item.quantity}</p>
-                            <p>قیمت: ${item.product.price} تومان</p>
-                            <button class="btn btn-sm btn-danger" onclick="removeFromCart(${item.product.id})">❌ حذف</button>
-                        </div>
-                    </div>
-                `;
-            });
-        } else {
-            container.innerHTML = "<p class='text-center'>🛍️ سبد خرید شما خالی است.</p>";
-        }
-    });
-}
-
-// وقتی صفحه لود شد → سبد خرید رو بارگذاری کن
-document.addEventListener("DOMContentLoaded", loadCart);
-</script>
-{% csrf_token% }
-<script>
-function getCookie(name) {
-    let cookieValue=null;
-    if(document.cookie && document.cookie !== '') {
-        const cookie = document.cookie.split(';');
-        for(let i=0; i<cookies.length; i++) {
-            const cookie =cookies[i].trim();
-            if (cookie.substring(name.length +1)===(name +'=')){
-                cookieValue= decodeURIComponent(cookie.substring(name.length +1));
-                break;
-
+    <script>
+        // ------------------ CSRF Helper ------------------
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
             }
+            return cookieValue;
         }
-    }
-    return cookieValue;
-}
-const csrftoken=getCookie("csrftoken");
-</script>
+        const csrftoken = getCookie("csrftoken");
+
+        // ------------------ Base URLs ------------------
+        let BASE_URL = "http://127.0.0.1:8000";
+        const API_CART = BASE_URL + "/api/cart/";
+        const API_ORDER = BASE_URL + "/api/orders/";
+
+        // ------------------ Load Cart ------------------
+        function loadCart() {
+            fetch(API_CART)
+                .then(res => res.json())
+                .then(data => {
+                    const container = document.getElementById("cart-items");
+                    container.innerHTML = "";
+
+                    if (data.items && data.items.length > 0) {
+                        data.items.forEach(item => {
+                            container.innerHTML += `
+                                <div class="col-md-4 mb-3">
+                                    <div class="card p-3 shadow-sm">
+                                        <h5>${item.product.name}</h5>
+                                        <p>تعداد: ${item.quantity}</p>
+                                        <p>قیمت: ${item.product.price} تومان</p>
+                                        <button class="btn btn-sm btn-danger" onclick="removeFromCart(${item.product.id})">حذف</button>
+                                    </div>
+                                </div>`;
+                        });
+                    } else {
+                        container.innerHTML = "<p class='text-center w-100'>🛍️ سبد خرید شما خالی است.</p>";
+                    }
+                });
+        }
+
+        // ------------------ Add Item ------------------
+        function addToCart(productId) {
+            fetch(API_CART + "add_item/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error("خطا در افزودن محصول");
+                return res.json();
+            })
+            .then(data => {
+                alert("✅ محصول اضافه شد به سبد!");
+                loadCart();
+            })
+            .catch(err => alert("❌ " + err.message));
+        }
+
+        // ------------------ Remove Item ------------------
+        function removeFromCart(productId) {
+            fetch(API_CART + "remove_item/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                },
+                body: JSON.stringify({ product_id: productId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("🗑️ محصول حذف شد!");
+                loadCart();
+            });
+        }
+
+        // ------------------ Clear Cart ------------------
+        function clearCart() {
+            fetch(API_CART + "clear_cart/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("🧹 سبد خرید خالی شد!");
+                loadCart();
+            });
+        }
+
+        // ------------------ Checkout ------------------
+        function checkout() {
+            fetch(API_ORDER + "checkout/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert("✅ سفارش ثبت شد!");
+                loadCart();
+            });
+        }
+
+        // ------------------ Init ------------------
+        document.addEventListener("DOMContentLoaded", loadCart);
+    </script>
+
 </body>
 </html>
-

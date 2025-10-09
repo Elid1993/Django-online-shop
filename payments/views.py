@@ -1,9 +1,10 @@
-# import requests
+import requests
+from django.shortcuts import render ,redirect
 from django.conf import settings
 from rest_framework import viewsets,status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny,IsAuthenticated
 from .models import Payment
 from drf_spectacular.utils import extend_schema
 from .serializers import PaymentSerializer
@@ -56,20 +57,20 @@ class PaymentViewSet(viewsets.ModelViewSet):
         status_params= request.query_params.get("status")
         
         try:
-            payment=Payment.objects.get(authority=authority,user=request.user)
+            payment=Payment.objects.get(authority=authority)
         except Payment.DoesNotExist:  
-            return Response ({"detail":"Payment not found"},status =404)  
-        if status_params != ok:
+            return render (request,"payment_failed.html")  
+        if status_params != "OK":
             payment.status="failed"
             payment.save()
-            return Response({"detail":"Payment failed"},statue =400)
+            return render(request,"payment_failed.html")
         req_data={
         "merchant_id":settings.ZARINPAL_MERCHANT_ID,
         "amount":int(payment.amount),
         "authority":authority   
         }
         
-        res= requests.post(settings.ZARINpAL_VERIFY_URL,json=req_data)
+        res= requests.post(settings.ZARINPAL_VERIFY_URL,json=req_data)
         data =res.json()
         if "data" in data and data["data"].get("code")==100:
             payment.status="success"
@@ -79,11 +80,11 @@ class PaymentViewSet(viewsets.ModelViewSet):
             order =payment.order
             order.status="paid"
             order.save()
-            return Response ({"detail":"Payment successful","ref_id":payment.ref_id })
+            return render (request,"payment_success.html",{"ref_id":payment.ref_id,"amount":payment.amount })
         else:
             payment.status="failed"
             payment.save()
-            return Response(data,status=400)
+            return render (request,"payment_failed.html")
     
     
     

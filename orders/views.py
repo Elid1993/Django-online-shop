@@ -78,6 +78,7 @@ from django.utils.decorators import method_decorator
 from .models import Cart, CartItem, Order, OrderItem
 from .serializers import CartSerializer, CartItemSerializer, OrderSerializer
 from django.http import JsonResponse
+from django.shortcuts import redirect
 
 # 🟢 تابع کمکی برای گرفتن سبد خرید کاربر
 def get_cart(request):
@@ -180,7 +181,8 @@ class OrderViewSet(viewsets.ViewSet):
             )
         cart.items.all().delete()
 
-        return Response(OrderSerializer(order).data, status=201)
+        return redirect(f"/api/payments/start/?order_id={order.id}")
+        # return Response(OrderSerializer(order).data, status=201)
 
 
 
