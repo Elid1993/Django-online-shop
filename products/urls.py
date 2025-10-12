@@ -11,7 +11,7 @@ router.register(r"product-images",ProductImageViewSet,basename="product_image")
 
 urlpatterns =[
     path('api/',include (router.urls,)),
-    path("products/",product_list,name ="product_list"),
+    path("",product_list,name ="product_list"),
     path("products/<int:pk>/",product_detail,name="product_detail"),
     path("cart/",cart_view,name="cart"),
     path("orders/",orders_view,name="orders_view"),

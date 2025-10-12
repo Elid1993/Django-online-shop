@@ -85,6 +85,39 @@ class PaymentViewSet(viewsets.ModelViewSet):
             payment.status="failed"
             payment.save()
             return render (request,"payment_failed.html")
+
+def payment_start(request):
+    user=request.user if request.user.is_authenticated else None
+    # (آخرین سفارش کاربر کخ پرداخت نشده)
+    order=Order.objects.filter(user=user,status="pending").last()
+    if not order:
+        return render(request,"payment_failed.html",{"error": "سفارشی برای پرداخت وجود ندارد"})
+    payment,created=Payment.objects.get_or_create(
+        order=order,
+        user=user,
+        defaults={"amount":order.total_amount}
+    )
+    req_data={
+        "merchant_id":settings.ZARINPAL_MERCHANT_ID,
+        "amount":int(payment.amount),
+        "callback_url":settings.CALLBACK_URL,
+        "description":f"پرداخت سفترش شماره {order.id}",
+        }
+    res= requests.post(settings.ZARINPAL_REQUEST_URL,json=req_data)
+    data=res.json()
+        
+    if "data" in data and data["data"].get("authority"):
+        authority=data["data"]["authority"]
+        payment.authority=authority
+        payment.save()
+        return redirect(settings.ZARINPAL_STARTPAY_URL + authority)
+    else:
+        return render(request,"payment_failed.html",{"error":"خطا در پرداخت با زرین پال"})
+
+def payment_success(request):
+    return render(request,"payment_success.html",{ "ref_id":"TEST12345","amount":150000,})
     
+def payment_failed(request):
+    return render (request,"payment_failed.html")
     
     

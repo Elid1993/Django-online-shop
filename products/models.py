@@ -26,8 +26,7 @@ class Product(models.Model):
     is_active=models.BooleanField(default=True)
     created_at=models.DateTimeField(auto_now_add=True)
     updated_at=models.DateTimeField(auto_now=True)
-    # class Meta:
-    #     ordering=["-created_at"]       
+    
     def save(self,*args,**kwargs):
         if not self.slug :
             base_slug=slugify(self.name)

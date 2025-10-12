@@ -6,9 +6,6 @@ from rest_framework .permissions import IsAuthenticatedOrReadOnly,IsAdminUser
 from .permissions import IsOwnerOrAdmin
 from django.shortcuts import render,get_object_or_404
 
-def index(request):
-        return render(request ,"index.html")
-
 class IsAdminOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action in ["list","retrieve"]:

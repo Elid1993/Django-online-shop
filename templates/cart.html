@@ -1,4 +1,4 @@
-{% load static %}
+{% comment %} {% comment %} {% load static %}
 <!DOCTYPE html>
 <html lang="fa">
 <head>
@@ -141,5 +141,93 @@
         document.addEventListener("DOMContentLoaded", loadCart);
     </script>
 
+</body>
+{% comment %} </html> {% endcomment %}
+
+
+
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>سبد خرید شما</title>
+    <style>
+        body {
+            font-family: "Vazir", sans-serif;
+            background-color: #f4f4f4;
+            padding: 40px;
+            direction: rtl;
+        }
+        h2 {
+            text-align: center;
+        }
+        table {
+            width: 70%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 10px #ccc;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .total {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h2>🛒 سبد خرید شما</h2>
+
+    {% if items %}
+    <table>
+        <tr>
+            <th>محصول</th>
+            <th>تعداد</th>
+            <th>قیمت</th>
+            <th>جمع</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.product.price }} تومان</td>
+            <td>{{ item.total }} تومان</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <div class="total">
+        <p><strong>مجموع کل:</strong> {{ total_amount }} تومان</p>
+        {% comment %} <form action="{% url 'payment_start' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn">💳 پرداخت</button>
+        </form> {% endcomment %}
+        <a href="/api/payments/start/" class="btn">پرداخت</a>
+    </div>
+    {% else %}
+    <p style="text-align:center;">سبد خرید شما خالی است.</p>
+    {% endif %}
 </body>
 </html>
