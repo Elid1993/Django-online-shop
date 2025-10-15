@@ -26,10 +26,10 @@ urlpatterns = [
     path("api/schema/swagger-ui/",SpectacularSwaggerView.as_view(url_name="schema"),name="swagger-ui",),
     path("api/schema/redoc/",SpectacularRedocView.as_view(url_name="schema"),name="redoc",),
     path("admin/", admin.site.urls),
-    path(" ",product_list,name="home"),
+    path("",product_list,name="home"),
     path("api/",include("orders.urls")),
     path("api/accounts/",include("accounts.urls")),
-    path("api/payments/",include ("payments.urls")),
+    path("payments/",include ("payments.urls")),
     path("",include("products.urls")),
     
 ]

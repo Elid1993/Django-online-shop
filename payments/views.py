@@ -113,7 +113,10 @@ def payment_start(request):
         return redirect(settings.ZARINPAL_STARTPAY_URL + authority)
     else:
         return render(request,"payment_failed.html",{"error":"خطا در پرداخت با زرین پال"})
-
+# def payment_start(request):
+#     return redirect("payment_success")
+def payment_verify(request):
+    return recirect("payment_success")
 def payment_success(request):
     return render(request,"payment_success.html",{ "ref_id":"TEST12345","amount":150000,})
     

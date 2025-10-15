@@ -224,7 +224,8 @@
             {% csrf_token %}
             <button type="submit" class="btn">💳 پرداخت</button>
         </form> {% endcomment %}
-        <a href="/api/payments/start/" class="btn">پرداخت</a>
+        {% comment %} <a href="/api/payments/start/" class="btn">پرداخت</a> {% endcomment %}
+        <a href="{%url 'payment_start'%}" class="btn">پرداخت</a>
     </div>
     {% else %}
     <p style="text-align:center;">سبد خرید شما خالی است.</p>
