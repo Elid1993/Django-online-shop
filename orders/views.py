@@ -34,11 +34,11 @@ def view_cart(request):
             "price":item.product.price,
             "total":total,
         })
-        context ={
+    context ={
             "items": cart_items,
             "total_amount":total_amount,
         }
-        return render(request,"cart.html", context)
+    return render(request,"cart.html", context)
  
 
 @method_decorator(csrf_exempt, name='dispatch')
